@@ -1,47 +1,50 @@
 import throttle from "lodash.throttle";
 
 const form = document.querySelector('.feedback-form');
- const email = document.querySelector('input');
- const message = document.querySelector('textarea');
-//const { email, message } = form.elements;
+const emailInput = document.querySelector(' input');
+const messagesInput = document.querySelector('textarea');
+
 const LOCALSTORAGE_KEY = "feedback-form-state";
-updateOutput();
+let formData = {};
+
 form.addEventListener('input', throttle(writeForm, 500));
-const formData = {};
+form.addEventListener("submit", saveMessage);
+
+updateOutput();
+
 function writeForm(event) {
-    formData[event.target.name] = event.target.value;
+    formData = {
+        email: emailInput.value,
+        message: messagesInput.value,
+    };
+    //formData[event.target.name] = event.target.value;
     //console.log(formData);
     localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(formData));
-    
 }
-updateOutput();
-form.addEventListener("submit", saveMessage);
+
 function saveMessage(event) {
+    event.preventDefault();
+    const { email, message } = event.currentTarget.elements;
+    console.log({ email: email.value, message: message.value });
+
     if (email.value === '' || message.value === '') {
         return alert('Всі поля повинні бути заповнені');
     }
-    event.preventDefault();
-    console.log(formData);
+
     localStorage.removeItem(LOCALSTORAGE_KEY);
     form.reset();
-    
+    formData = {};
 }
-function updateOutput(event) {
-    const saveFormData = localStorage.getItem(LOCALSTORAGE_KEY);
-
+function updateOutput() {
+    let saveFormData = localStorage.getItem(LOCALSTORAGE_KEY);
     if (saveFormData) {
-        const parsedFormData = JSON.parse(saveFormData);  
-        console.log(parsedFormData);
-        Object.entries(parsedFormData).forEach(([name, value]) => {
-            form.elements[name].value = value ?? '';
-        })
-
-        //emailInput.value = parsedFormData.email;
-        //messagesInput.value = parsedFormData.message;
+        const parsedFormData = JSON.parse(saveFormData);
+        emailInput.value = parsedFormData.email;
+        messagesInput.value = parsedFormData.message;
     }
-    // else {
-        // emailInput.value = '';
-         // messagesInput.value = '';
-    // }
-    
+    else {
+        emailInput.value = '';
+        messagesInput.value = '';
+    }
+
 }
